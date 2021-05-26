@@ -8,17 +8,12 @@ import argparse
 import os
 
 
-# # BLACK & WHITE IMAGING
-# img = cv.imread(filename,cv2.IMREAD_GRAYSCALE)
-# cv.imshow('image',img)
-# k = cv.waitKey(0)
-#  if k == ord("s"):
-#     cv.imwrite("starry_night.png", img)
-# cv.destroyAllWindows()
-
-image = cv.imread('ramen_packet.png')
-image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
-cv.imwrite('ramen_packet_gray.png', image_gray)
+# BLACK & WHITE IMAGING
+def black_white(filename):  
+    print(filename)
+    image = cv.imread('./static/media/122677.jpg')
+    image_gray = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+    cv.imwrite("./static/media/filename2.jpg", image_gray)
 
 # BACKGROUND SUBTRACTION METHOD
 

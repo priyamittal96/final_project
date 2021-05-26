@@ -1,11 +1,14 @@
+from __future__ import print_function
+from __future__ import division
 from flask import Flask, flash, request, url_for, jsonify, render_template, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 
-import pandas as pd
-import datetime as dt
-import json
+import cv2 as cv
 import numpy as np
+from matplotlib import pyplot as plt
+import argparse
 import os
+import image_view
 
 # Upload Locations
 UPLOAD_FOLDER = './static/media'
@@ -15,15 +18,16 @@ ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mov', 'img'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# @app.route("/")
-# def home():
-#     return render_template("upload_file.html")
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+@app.route('/upload', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
         # check if the post request has the file part
@@ -41,12 +45,15 @@ def upload_file():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('uploaded_file',
                                     filename=filename))
-    return render_template("upload_file.html")
+    return render_template("upload.html")
+
+
     
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
+    image_view.black_white(filename)
     return send_from_directory(app.config['UPLOAD_FOLDER'],
-                               filename)
+                               'filename2.jpg')
 
 
 # @app.route("/black&white")
