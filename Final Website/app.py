@@ -1,147 +1,70 @@
-from flask import Flask, jsonify, render_template,redirect
+from flask import Flask, flash, request, url_for, jsonify, render_template, redirect, send_from_directory
+from werkzeug.utils import secure_filename
+
 import pandas as pd
 import datetime as dt
 import json
 import numpy as np
+import os
 
-# Python SQL toolkit and Object Relational Mapper
-import sqlalchemy
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine, func
-
-# Create engine to hawaii.sqlite
-engine = create_engine("sqlite:///./static/sqlite/twitch.sqlite")
-
-# Reflect an existing database into a new model
-Base = automap_base()
-
-# Reflect the tables
-Base.prepare(engine, reflect=True)
-
-# Save references to each table
-game_data = Base.classes.game_data
-top_games = Base.classes.top_games
-
-# Create our session (link) from Python to the DB
-session = Session(engine)
+# Upload Locations
+UPLOAD_FOLDER = './static/media'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mov', 'img'}
 
 # Flask Setup
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-@app.route("/")
-def home():
-    return render_template("user.html")
+# @app.route("/")
+# def home():
+#     return render_template("upload_file.html")
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))
+    return render_template("upload_file.html")
     
-    # return (
-    #     "<h1>Welcome to the Twitch Dashboard Homepage!</h1><br/>"
-    #     "Available Routes:<br/>"
-    #     "/top_games<br/>"
-    #     "/platforms<br/>"
-    #     "/timeline<br/>"
-    #     "/hours<br/>"
-    #     "/growth<br/>"
-    #     "/growth/games<br/>"
-    #     "/growth/streamers<br/>"
-        
-    # )
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'],
+                               filename)
 
 
-@app.route("/top_games")
-def games():
-    data_list = []
-    for row in session.query(top_games).all():
-        data_list.append(row.__dict__["game_name"])
-    # return data_list
-    return render_template("icons.html", list=data_list)
+# @app.route("/black&white")
+# def games():
+#     data_list = []
+#     for row in session.query(top_games).all():
+#         data_list.append(row.__dict__["game_name"])
+#     # return data_list
+#     return render_template("icons.html", list=data_list)
 
 
-@app.route("/game_stats")
-def stats():
-    return render_template("dashboard.html")
+# @app.route("/linear_optical")
+# def stats():
+#     return render_template("dashboard.html")
 
-# @app.route("/tables")
-# def tables():
-#     return render_template("tables.html")
-
-@app.route("/video_stats")
-def vid_stats():
-    return render_template("video.html")
-
-# @app.route("/bubbles")
-# def bubbles():
-#     return render_template("bubbles.html")
-
-# @app.route("/timeline")
-# def tobs():
-#     # Query the dates and temperature observations of the most active station for the last year of data
-#     prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-#     results = session.query(Measurement.date, Measurement.tobs).filter(Measurement.station == 'USC00519281')\
-#                 .filter(Measurement.date >= prev_year).all()
-        
-#     session.close()    
-#     temps = {date: tobs for date, tobs in results}
-
-#     # Return a JSON list of temperature observations (TOBS) for the previous year.
-#     date_temp = list(np.ravel(temps))
-#     return jsonify(date_temp)
-
-# @app.route("/hours")
-# def tobs():
-#     # Query the dates and temperature observations of the most active station for the last year of data
-#     prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-#     results = session.query(Measurement.date, Measurement.tobs).filter(Measurement.station == 'USC00519281')\
-#                 .filter(Measurement.date >= prev_year).all()
-        
-#     session.close()    
-#     temps = {date: tobs for date, tobs in results}
-
-#     # Return a JSON list of temperature observations (TOBS) for the previous year.
-#     date_temp = list(np.ravel(temps))
-#     return jsonify(date_temp)
-
-# @app.route("/growth")
-# def tobs():
-#     # Query the dates and temperature observations of the most active station for the last year of data
-#     prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-#     results = session.query(Measurement.date, Measurement.tobs).filter(Measurement.station == 'USC00519281')\
-#                 .filter(Measurement.date >= prev_year).all()
-        
-#     session.close()    
-#     temps = {date: tobs for date, tobs in results}
-
-#     # Return a JSON list of temperature observations (TOBS) for the previous year.
-#     date_temp = list(np.ravel(temps))
-#     return jsonify(date_temp)
-
-# @app.route("/growth/games")
-# def tobs():
-#     # Query the dates and temperature observations of the most active station for the last year of data
-#     prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-#     results = session.query(Measurement.date, Measurement.tobs).filter(Measurement.station == 'USC00519281')\
-#                 .filter(Measurement.date >= prev_year).all()
-        
-#     session.close()    
-#     temps = {date: tobs for date, tobs in results}
-
-#     # Return a JSON list of temperature observations (TOBS) for the previous year.
-#     date_temp = list(np.ravel(temps))
-#     return jsonify(date_temp)
-
-# @app.route("/growth/streamers")
-# def tobs():
-#     # Query the dates and temperature observations of the most active station for the last year of data
-#     prev_year = dt.date(2017, 8, 23) - dt.timedelta(days=365)
-#     results = session.query(Measurement.date, Measurement.tobs).filter(Measurement.station == 'USC00519281')\
-#                 .filter(Measurement.date >= prev_year).all()
-        
-#     session.close()    
-#     temps = {date: tobs for date, tobs in results}
-
-#     # Return a JSON list of temperature observations (TOBS) for the previous year.
-#     date_temp = list(np.ravel(temps))
-#     return jsonify(date_temp)
-
+# @app.route("/density_optical")
+# def vid_stats():
+#     return render_template("video.html")
 
 
 if __name__ == "__main__":
