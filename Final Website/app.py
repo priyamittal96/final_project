@@ -56,23 +56,6 @@ def uploaded_file(filename):
                                'filename2.jpg')
 
 
-# @app.route("/black&white")
-# def games():
-#     data_list = []
-#     for row in session.query(top_games).all():
-#         data_list.append(row.__dict__["game_name"])
-#     # return data_list
-#     return render_template("icons.html", list=data_list)
-
-
-# @app.route("/linear_optical")
-# def stats():
-#     return render_template("dashboard.html")
-
-# @app.route("/density_optical")
-# def vid_stats():
-#     return render_template("video.html")
-
 
 if __name__ == "__main__":
     app.run(debug=True)
